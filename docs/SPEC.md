@@ -2064,7 +2064,7 @@ from(bucket:"telegraf/autogen")
 ```
 #### Group
 
-Group groups records based on their values for specific columns.
+_Group_ groups records based on their values for specific columns.
 It produces tables with new group keys based on the provided properties.
 
 Group accepts _exactly one_ of the following properties:
@@ -2076,17 +2076,13 @@ Group accepts _exactly one_ of the following properties:
 *  `none` boolean
     Group by nothing, so, group all records into a single group.
 *  `all` boolean
-    Do not group.
+    Group by every column.
     
 Specifying more than one of the properties above would result in an error.
 
-Examples:
+__Examples__
 
-*    `group(by: ["host"])`: group records by their `"host"` value.
-*    `group(except: ["_time", "region", "_value"])`: group records by the values in all other columns except for
-     `"_time"`, `"region"`, and `"_value"`.
-*    `group(none: true)`: group all records into a single group
-*    `group(all: true)`: ignores grouping. Equivalent to `group()`.
+_By_
 
 ```
 from(bucket: "telegraf/autogen") 
@@ -2094,7 +2090,13 @@ from(bucket: "telegraf/autogen")
     |> group(by: ["host", "_measurement"])
 ```
 
-All records are grouped by the `"host"` and `"_measurement"` columns. The resulting group key would be `["host", "_measurement"]`
+Records are grouped by the `"host"` and `"_measurement"` columns.  
+The resulting group key is `["host", "_measurement"]`, so a new table for every different `["host", "_measurement"]`
+value is created.  
+Every table in the result contains every record for some `["host", "_measurement"]` value.  
+Every record in some resulting table has the same value for the columns `"host"` and `"_measurement"`.
+
+_Except_
 
 ```
 from(bucket: "telegraf/autogen")
@@ -2102,8 +2104,32 @@ from(bucket: "telegraf/autogen")
     |> group(except: ["_time"])
 ```
 
-All records are grouped by the set of all columns in the table, excluding `"_time"`. For example, if the table has columns
-`["_time", "host", "_measurement", "_field", "_value"]` then the group key would be `["host", "_measurement", "_field", "_value"]`.
+Records are grouped by the set of all columns in the table, excluding `"_time"`.  
+For example, if the table has columns `["_time", "host", "_measurement", "_field", "_value"]` then the group key would be
+`["host", "_measurement", "_field", "_value"]`.
+
+_None_
+
+```
+from(bucket: "telegraf/autogen")
+    |> range(start: -30m)
+    |> group(none: true)
+```
+
+Records are grouped into a single table.  
+The group key of the resulting table is empty.
+
+_All_
+
+```
+from(bucket: "telegraf/autogen")
+    |> range(start: -30m)
+    |> group(all: true)
+```
+
+Group records by every column.  
+The group key is composed of `"_field"`, `"_measurement"`, and the tag set.  
+In essence, each resulting table contains a series for a specific field.
 
 #### Keys
 
