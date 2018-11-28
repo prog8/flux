@@ -1250,6 +1250,9 @@ Example:
 
     from(bucket:"telegraf/autogen")
     from(bucketID:"0261d8287f4d6000")
+    
+__NOTE__  
+The default group key for the tables produced by `from` is every column except `_time` and `_value`.
 
 #### Buckets
 
@@ -2075,8 +2078,6 @@ Group accepts _exactly one_ of the following properties:
     Group by all other columns except this list.
 *  `none` boolean
     Group by nothing, so, group all records into a single group.
-*  `all` boolean
-    Group by every column.
     
 Specifying more than one of the properties above would result in an error.
 
@@ -2118,18 +2119,6 @@ from(bucket: "telegraf/autogen")
 
 Records are grouped into a single table.  
 The group key of the resulting table is empty.
-
-_All_
-
-```
-from(bucket: "telegraf/autogen")
-    |> range(start: -30m)
-    |> group(all: true)
-```
-
-Group records by every column.  
-The group key is composed of `"_field"`, `"_measurement"`, and the tag set.  
-In essence, each resulting table contains a series for a specific field.
 
 #### Keys
 
